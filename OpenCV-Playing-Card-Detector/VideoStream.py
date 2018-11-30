@@ -21,7 +21,7 @@
 from threading import Thread
 import cv2
 
-
+BRIGHTNESS = 40
 class VideoStream:
     """Camera object"""
     def __init__(self, resolution=(640,480),framerate=30,PiOrUSB=1,src=0):
@@ -39,7 +39,7 @@ class VideoStream:
             self.camera = PiCamera()
             self.camera.resolution = resolution
             self.camera.framerate = framerate
-            self.camera.brightness = 30
+            self.camera.brightness = BRIGHTNESS
             self.rawCapture = PiRGBArray(self.camera,size=resolution)
             self.stream = self.camera.capture_continuous(
                 self.rawCapture, format = "bgr", use_video_port = True)

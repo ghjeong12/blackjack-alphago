@@ -55,7 +55,8 @@ while cam_quit == 0:
 
     # Grab frame from video stream
     image = videostream.read()
-
+    
+    image =cv2.flip(image, -1)
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
 
@@ -104,16 +105,54 @@ while cam_quit == 0:
     for i in range(len(cards)):
         print(cards[i].center)
         if (cards[i].center[1]>300):
-            dealer_cards.append(cards[i])
-        else:
             player_cards.append(cards[i])
+        else:
+            dealer_cards.append(cards[i])
     
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
     cv2.putText(image,"FPS: "+str(int(frame_rate_calc)),(10,26),font,0.7,(255,0,255),2,cv2.LINE_AA)
-    cv2.putText(image,"# dealer cards: "+str(len(dealer_cards)),(10,50),font,0.7,(255,0,255),2,cv2.LINE_AA)
-    cv2.putText(image,"# player cards: "+str(len(player_cards)),(10,80),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    
+    
+    #calc current number
+    player_sum = 0
+    dealer_sum = 0
+    for i in range(len(dealer_cards)):
+        if(dealer_cards[i].best_rank_match == "Unknown"):
+            dealer_sum += 0
+        elif(dealer_cards[i].best_rank_match == "Six"):
+            dealer_sum += 6 
+        elif(dealer_cards[i].best_rank_match == "Nine"):
+            dealer_sum += 9 
+        else:
+            dealer_sum += int(dealer_cards[i].best_rank_match)
+    
 
+    for i in range(len(player_cards)):
+        if(player_cards[i].best_rank_match == "Unknown"):
+            player_sum += 0
+        elif(player_cards[i].best_rank_match == "Six"):
+            player_sum += 6 
+        elif(player_cards[i].best_rank_match == "Nine"):
+            player_sum += 9 
+        else:
+            player_sum += int(player_cards[i].best_rank_match)
+    
+    cv2.putText(image,"# player cards: "+str(len(player_cards))+" with "+str(player_sum) ,(10,80),font,0.7,(255,0,255),2,cv2.LINE_AA)
+
+    cv2.putText(image,"# dealer cards: "+str(len(dealer_cards)) + " with "+str(dealer_sum),(10,50),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    
+    recommend = "?"
+    proba = 0.0
+    # Should implement by DH
+
+
+    action = "BEST ACTION: " + recommend + " with probability " + str(proba)
+    
+    cv2.putText(image,action,(10,110),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    
+
+    cv2.line(image, (0, 320), (1280, 320), (0,255,0), 2)
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector",image)
 
