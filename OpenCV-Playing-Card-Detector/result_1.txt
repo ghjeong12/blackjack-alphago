@@ -1,0 +1,67 @@
+Begin main loop
+size : 
+31588.0
+size : 
+709.0
+size : 
+701.0
+size : 
+694.0
+size : 
+689.0
+size : 
+677.0
+size : 
+670.5
+size : 
+665.5
+size : 
+663.0
+size : 
+651.5
+size : 
+649.0
+size : 
+105.0
+size : 
+92.5
+size : 
+43.0
+size : 
+38.0
+size : 
+37.0
+size : 
+34.0
+size : 
+33.5
+size : 
+31.5
+size : 
+30.5
+size : 
+30.5
+size : 
+30.0
+size : 
+26.0
+rank img
+125
+train img
+<class 'Cards.Train_ranks'>
+rank img
+125
+train img
+<class 'Cards.Train_ranks'>
+rank img
+125
+train img
+<class 'Cards.Train_ranks'>
+rank img
+125
+train img
+<class 'Cards.Train_ranks'>
+rank img
+125
+train img
+<class 'Cards.Train_ranks'>

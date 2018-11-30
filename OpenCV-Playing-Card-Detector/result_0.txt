@@ -1,0 +1,46 @@
+Begin main loop
+size : 
+31017.0
+size : 
+798.0
+size : 
+790.5
+size : 
+790.5
+size : 
+787.5
+size : 
+773.0
+size : 
+772.0
+size : 
+765.5
+size : 
+758.5
+size : 
+756.5
+size : 
+739.5
+size : 
+133.0
+size : 
+113.0
+rank img
+125
+train img
+125
+rank img
+125
+train img
+125
+rank img
+125
+train img
+125
+rank img
+125
+train img
+125
+rank img
+125
+train img
