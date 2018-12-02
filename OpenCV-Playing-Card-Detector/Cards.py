@@ -54,7 +54,7 @@ class Query_card:
         self.best_suit_match = "Unknown" # Best matched suit
         self.rank_diff = 0 # Difference between rank image and best matched train rank image
         self.suit_diff = 0 # Difference between suit image and best matched train suit image
-
+        self.current_rank_diff = 0
 class Train_ranks:
     """Structure to store information about train rank images."""
 
@@ -243,12 +243,14 @@ def match_card(qCard, train_ranks, train_suits):
     the query card rank and suit images with the train rank and suit images.
     The best match is the rank or suit image that has the least difference."""
 
-    best_rank_match_diff = 10000
-    best_suit_match_diff = 10000
+    #initail value for diff was 10000
+    best_rank_match_diff = 40000
+    best_suit_match_diff = 40000
     best_rank_match_name = "Unknown"
     best_suit_match_name = "Unknown"
     i = 0
-
+    
+    current_rank_diff = 100000
     # If no contours were found in query card in preprocess_card function,
     # the img size is zero, so skip the differencing process
     # (card will be left as Unknown)
@@ -256,6 +258,7 @@ def match_card(qCard, train_ranks, train_suits):
         
         # Difference the query card rank image from each of the train rank images,
         # and store the result with the least difference
+        min_rank_diff = 3000
         for Trank in train_ranks:
             print("rank img")
             print(len(qCard.rank_img))
@@ -263,12 +266,16 @@ def match_card(qCard, train_ranks, train_suits):
             print(type(Trank))
             diff_img = cv2.absdiff(qCard.rank_img, Trank.img)
             rank_diff = int(np.sum(diff_img)/255)
-  
+            if min_rank_diff > rank_diff:
+                min_rank_diff = rank_diff
+                current_rank_diff =min_rank_diff
+                best_rank_match_name = Trank.name
+            '''original
             if rank_diff < best_rank_match_diff:
                 best_rank_diff_img = diff_img
                 best_rank_match_diff = rank_diff
                 best_rank_name = Trank.name
-
+            '''
         # Same process with suit images
         for Tsuit in train_suits:
                 
@@ -292,8 +299,10 @@ def match_card(qCard, train_ranks, train_suits):
         cv2.imwrite('diff_img_suit.jpg', best_suit_diff_img)
 
     # Return the identiy of the card and the quality of the suit and rank match
-    return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
+    #return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
+    return best_rank_match_name, best_suit_match_name, current_rank_diff, best_suit_match_diff
     
+
     
 def draw_results(image, qCard):
     """Draw the card name, center point, and contour on the camera image."""

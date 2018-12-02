@@ -13,7 +13,8 @@ import time
 import os
 import Cards
 import VideoStream
-
+from recommend_test import *
+from dealer import *
 
 ### ---- INITIALIZATION ---- ###
 # Define constants and initialize variables
@@ -51,12 +52,18 @@ train_suits = Cards.load_suits( path + '/New_Cards/')
 cam_quit = 0 # Loop control variable
 print("Begin main loop")
 # Begin capturing frames
+key=''
+dealer_stand = 0
+done_dealer = 0
+image = None
+old_dealer_cards = []
+old_player_cards = []
 while cam_quit == 0:
 
     # Grab frame from video stream
     image = videostream.read()
     
-    image =cv2.flip(image, -1)
+    #image =cv2.flip(image, -1)
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
 
@@ -86,10 +93,11 @@ while cam_quit == 0:
                 cards.append(Cards.preprocess_card(cnts_sort[i],image))
 
                 # Find the best rank and suit match for the card.
+                #cards[k].best_rank_match,cards[k].best_suit_match,cards[k].rank_diff,cards[k].suit_diff = Cards.match_card(cards[k],train_ranks,train_suits)
                 cards[k].best_rank_match,cards[k].best_suit_match,cards[k].rank_diff,cards[k].suit_diff = Cards.match_card(cards[k],train_ranks,train_suits)
 
                 # Draw center point and match result on the image.
-                image = Cards.draw_results(image, cards[k])
+                #image = Cards.draw_results(image, cards[k])
                 k = k + 1
 	    
         # Draw card contours on image (have to do contours all at once or
@@ -108,48 +116,49 @@ while cam_quit == 0:
             player_cards.append(cards[i])
         else:
             dealer_cards.append(cards[i])
-    
+    print("number of cards")
+    print(len(dealer_cards))
+    print(len(old_dealer_cards))
+    for i in range(len(dealer_cards)):
+        if not len(dealer_cards) == len(old_dealer_cards):
+            break
+        if(dealer_cards[i].best_rank_match == 'Unknown'):
+            if(old_dealer_cards[i].best_rank_match != 'Unknown'):
+                dealer_cards[i].best_rank_match = old_dealer_cards[i].best_rank_match
+        if(dealer_cards[i].best_suit_match == 'Unknown'):
+            if(old_dealer_cards[i].best_suit_match != 'Unknown'):
+                dealer_cards[i].best_suit_match = old_dealer_cards[i].best_suit_match
+
+    for i in range(len(player_cards)):
+        if not len(player_cards) == len(old_player_cards):
+            break
+        if(player_cards[i].best_rank_match == 'Unknown'):
+            if(old_player_cards[i].best_rank_match != 'Unknown'):
+                player_cards[i].best_rank_match = old_player_cards[i].best_rank_match
+        if(player_cards[i].best_suit_match == 'Unknown'):
+            if(old_player_cards[i].best_suit_match != 'Unknown'):
+                player_cards[i].best_suit_match = old_player_cards[i].best_suit_match
+ 
+    for i in range(len(cards)):
+        image = Cards.draw_results(image, cards[i])
+                
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
     cv2.putText(image,"FPS: "+str(int(frame_rate_calc)),(10,26),font,0.7,(255,0,255),2,cv2.LINE_AA)
     
+    player_sum, dealer_sum, action_recommendation, prob = recommend(player_cards, dealer_cards)
     
-    #calc current number
-    player_sum = 0
-    dealer_sum = 0
-    for i in range(len(dealer_cards)):
-        if(dealer_cards[i].best_rank_match == "Unknown"):
-            dealer_sum += 0
-        elif(dealer_cards[i].best_rank_match == "Six"):
-            dealer_sum += 6 
-        elif(dealer_cards[i].best_rank_match == "Nine"):
-            dealer_sum += 9 
-        else:
-            dealer_sum += int(dealer_cards[i].best_rank_match)
-    
+    cv2.putText(image,"# player cards: "+str(len(player_cards))+" with "+str(player_sum) ,(950,700),font,0.7,(255,0,255),2,cv2.LINE_AA)
 
-    for i in range(len(player_cards)):
-        if(player_cards[i].best_rank_match == "Unknown"):
-            player_sum += 0
-        elif(player_cards[i].best_rank_match == "Six"):
-            player_sum += 6 
-        elif(player_cards[i].best_rank_match == "Nine"):
-            player_sum += 9 
-        else:
-            player_sum += int(player_cards[i].best_rank_match)
-    
-    cv2.putText(image,"# player cards: "+str(len(player_cards))+" with "+str(player_sum) ,(10,80),font,0.7,(255,0,255),2,cv2.LINE_AA)
-
-    cv2.putText(image,"# dealer cards: "+str(len(dealer_cards)) + " with "+str(dealer_sum),(10,50),font,0.7,(255,0,255),2,cv2.LINE_AA)
-    
-    recommend = "?"
-    proba = 0.0
+    cv2.putText(image,"# dealer cards: "+str(len(dealer_cards)) + " with "+str(dealer_sum),(950,290),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    if(len(dealer_cards) >= 1):
+        cv2.putText(image,"Rank_diff "+str(dealer_cards[0].rank_diff), (10, 60), font,0.7,(255,0,255),2,cv2.LINE_AA)
     # Should implement by DH
-
-
-    action = "BEST ACTION: " + recommend + " with probability " + str(proba)
     
-    cv2.putText(image,action,(10,110),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    #"HIT"
+    action = "BEST ACTION: " + action_recommendation + " with probability " + str(prob)
+    
+    cv2.putText(image,action,(10,90),font,0.7,(255,0,255),2,cv2.LINE_AA)
     
 
     cv2.line(image, (0, 320), (1280, 320), (0,255,0), 2)
@@ -161,11 +170,48 @@ while cam_quit == 0:
     time1 = (t2-t1)/freq
     frame_rate_calc = 1/time1
     
+    old_player_cards = player_cards
+    old_dealer_cards = dealer_cards
+
     # Poll the keyboard. If 'q' is pressed, exit the main loop.
+    key = cv2.waitKey(1) & 0xFF
+    player_win = ""
+    if player_sum > 21:
+        player_win = "lose"
+        cv2.putText(image,"Result: Player " + player_win,(10,200),font,1.0,(0,0,255),2,cv2.LINE_AA)
+        cv2.putText(image,"Busted with " + str(player_sum),(10,230),font,1.0,(0,0,255),2,cv2.LINE_AA)
+        cv2.imshow("Card Detector",image)
+        cam_quit = 2
+
+    if key == ord("s") or dealer_stand == 1:
+        if player_sum > 21:
+            player_win = "lose"
+            cam_quit = 2
+            cv2.putText(image,action,(10,110),font,0.7,(255,0,255),2,cv2.LINE_AA)
+        dealer_stand = 1
+        dealer_action, final_dealer_sum = get_dealer_action(player_cards, dealer_cards)
+        if (dealer_action == 'break'):
+            cam_quit = 2
+            if(final_dealer_sum > 21):
+                player_win = "win"
+            elif final_dealer_sum > player_sum:
+                player_win = "lose"
+            elif final_dealer_sum < player_sum:
+                player_win = "win"
+            else :
+                player_win = "draw"
+            print(player_win)
+            cv2.putText(image,"Result: Player " + player_win,(10,200),font,1.0,(0,0,255),2,cv2.LINE_AA)
+            cv2.imshow("Card Detector",image)
+    
+    if key == ord("q"):
+        cam_quit = 1
+
+while(cam_quit != 1):
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
         cam_quit = 1
-        
+
 
 # Close all windows and close the PiCamera video stream.
 cv2.destroyAllWindows()

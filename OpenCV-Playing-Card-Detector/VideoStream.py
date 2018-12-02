@@ -21,7 +21,7 @@
 from threading import Thread
 import cv2
 
-BRIGHTNESS = 40
+BRIGHTNESS = 50
 class VideoStream:
     """Camera object"""
     def __init__(self, resolution=(640,480),framerate=30,PiOrUSB=1,src=0):
@@ -37,6 +37,8 @@ class VideoStream:
 
             # Initialize the PiCamera and the camera image stream
             self.camera = PiCamera()
+            self.camera.vflip = True
+            self.camera.hflip = True
             self.camera.resolution = resolution
             self.camera.framerate = framerate
             self.camera.brightness = BRIGHTNESS
