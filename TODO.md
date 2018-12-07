@@ -4,4 +4,5 @@
 A group without blackjack-alphago  
 A group with blackjack-alphago
 * Evaluation 2  
-Card detection precision
+Card detection precision  
+* Outline report
