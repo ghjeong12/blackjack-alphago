@@ -5,7 +5,13 @@ class User:
         self = self
     #s should be integer from 1 ~ 13
     def draw_card(self):
-        self.cards.append(random.randint(1,13))
+        card = random.randint(1,13)
+        if(card == 1):
+            self.cards.append(11)
+        elif(card >= 10):
+            self.cards.append(10)
+        else:
+            self.cards.append(card)
     
     def add_card(self, s):
         self.cards.append(s)
@@ -14,7 +20,7 @@ class User:
         print_string = ""
         self.cards.sort()
         for i in range(len(self.cards)):
-            if(self.cards[i] == 1):
+            if(self.cards[i] == 11):
                 print_string += ("A ")
             elif(self.cards[i] <= 10):
                 print_string += (str(self.cards[i]) + " ")

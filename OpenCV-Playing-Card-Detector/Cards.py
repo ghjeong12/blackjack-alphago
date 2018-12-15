@@ -15,7 +15,9 @@ import time
 
 # Adaptive threshold levels
 BKG_THRESH = 60
-CARD_THRESH = 50
+
+#default = 50
+CARD_THRESH = 30
 
 # Width and height of card corner, where rank and suit are
 CORNER_WIDTH = 32
@@ -33,7 +35,7 @@ RANK_DIFF_MAX = 2000
 SUIT_DIFF_MAX = 700
 
 CARD_MAX_AREA = 40000
-CARD_MIN_AREA = 20000
+CARD_MIN_AREA = 10000
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -84,7 +86,7 @@ def load_ranks(filepath):
         filename = Rank + '.jpg'
         train_ranks[i].img = cv2.imread(filepath+filename, cv2.IMREAD_GRAYSCALE)
         i = i + 1
-    print(str(i) + " ranks are loaded")
+    #print(str(i) + " ranks are loaded")
     return train_ranks
 
 def load_suits(filepath):
@@ -161,8 +163,8 @@ def find_cards(thresh_image):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i],True)
         approx = cv2.approxPolyDP(cnts_sort[i],0.01*peri,True)
-        print("size : ")
-        print(size)
+        #print("size : ")
+        #print(size)
         if ((size < CARD_MAX_AREA) and (size > CARD_MIN_AREA)
             and (hier_sort[i][3] == -1) and (len(approx) == 4)):
         #if (len(approx) == 4):
@@ -202,8 +204,16 @@ def preprocess_card(contour, image):
     Qcorner_zoom = cv2.resize(Qcorner, (0,0), fx=4, fy=4)
     
     # Sample known white pixel intensity to determine good threshold level
+    # why corner_width * 4?
     white_level = Qcorner_zoom[15,int((CORNER_WIDTH*4)/2)]
     thresh_level = white_level - CARD_THRESH
+    print("white/threash")
+    print(white_level)
+    print(Qcorner[80, int(CORNER_WIDTH/8)])
+    thresh_level = Qcorner[80, int(CORNER_WIDTH/8)] - CARD_THRESH
+    #height 84 * 7/9
+    print("black:"+str(Qcorner[65, int((CORNER_WIDTH)/2 - 3)])) 
+    print("threash: " + str(thresh_level))
     if (thresh_level <= 0):
         thresh_level = 1
     retval, query_thresh = cv2.threshold(Qcorner_zoom, thresh_level, 255, cv2. THRESH_BINARY_INV)
@@ -260,10 +270,10 @@ def match_card(qCard, train_ranks, train_suits):
         # and store the result with the least difference
         min_rank_diff = 3000
         for Trank in train_ranks:
-            print("rank img")
-            print(len(qCard.rank_img))
-            print("train img")
-            print(type(Trank))
+            #print("rank img")
+            #print(len(qCard.rank_img))
+            #print("train img")
+            #print(type(Trank))
             diff_img = cv2.absdiff(qCard.rank_img, Trank.img)
             rank_diff = int(np.sum(diff_img)/255)
             if min_rank_diff > rank_diff:

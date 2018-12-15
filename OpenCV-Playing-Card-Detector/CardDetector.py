@@ -58,6 +58,7 @@ done_dealer = 0
 image = None
 old_dealer_cards = []
 old_player_cards = []
+captured = 0
 while cam_quit == 0:
 
     # Grab frame from video stream
@@ -111,14 +112,14 @@ while cam_quit == 0:
     player_cards = []
     #find dealer cards
     for i in range(len(cards)):
-        print(cards[i].center)
+        #print(cards[i].center)
         if (cards[i].center[1]>300):
             player_cards.append(cards[i])
         else:
             dealer_cards.append(cards[i])
-    print("number of cards")
-    print(len(dealer_cards))
-    print(len(old_dealer_cards))
+    #print("number of cards")
+    #print(len(dealer_cards))
+    #print(len(old_dealer_cards))
     for i in range(len(dealer_cards)):
         if not len(dealer_cards) == len(old_dealer_cards):
             break
@@ -146,25 +147,24 @@ while cam_quit == 0:
     # so the first time this runs, framerate will be shown as 0.
     cv2.putText(image,"FPS: "+str(int(frame_rate_calc)),(10,26),font,0.7,(255,0,255),2,cv2.LINE_AA)
     
-    player_sum, dealer_sum, action_recommendation, prob = recommend(player_cards, dealer_cards)
+    player_sum, dealer_sum, action_recommendation, prob_h, prob_s = recommend(player_cards, dealer_cards)
     
     cv2.putText(image,"# player cards: "+str(len(player_cards))+" with "+str(player_sum) ,(950,700),font,0.7,(255,0,255),2,cv2.LINE_AA)
 
     cv2.putText(image,"# dealer cards: "+str(len(dealer_cards)) + " with "+str(dealer_sum),(950,290),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    
     if(len(dealer_cards) >= 1):
-        cv2.putText(image,"Rank_diff "+str(dealer_cards[0].rank_diff), (10, 60), font,0.7,(255,0,255),2,cv2.LINE_AA)
-    # Should implement by DH
+        cv2.putText(image,"Rank_diff "+str(dealer_cards[0].rank_diff), (10, 90), font,0.7,(255,0,255),2,cv2.LINE_AA)
     
-    #"HIT"
-    action = "BEST ACTION: " + action_recommendation + " with probability " + str(prob)
-    
-    cv2.putText(image,action,(10,90),font,0.7,(255,0,255),2,cv2.LINE_AA)
+    action = "BEST ACTION: " + action_recommendation + " (Winning Probability with HIT " + str(prob_h) + ", with STAND " + str(prob_s) + ")"
+    if(len(dealer_cards) <= 2):
+        cv2.putText(image,action,(10,60),font,0.7,(0,0,255),2,cv2.LINE_AA)
     
 
     cv2.line(image, (0, 320), (1280, 320), (0,255,0), 2)
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector",image)
-
+    
     # Calculate framerate
     t2 = cv2.getTickCount()
     time1 = (t2-t1)/freq
@@ -203,6 +203,10 @@ while cam_quit == 0:
             print(player_win)
             cv2.putText(image,"Result: Player " + player_win,(10,200),font,1.0,(0,0,255),2,cv2.LINE_AA)
             cv2.imshow("Card Detector",image)
+
+        if(captured == 0):
+            cv2.imwrite("Screenshot2.jpg",image)
+            captured == 1
     
     if key == ord("q"):
         cam_quit = 1

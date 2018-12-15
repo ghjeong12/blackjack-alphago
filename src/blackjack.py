@@ -1,6 +1,6 @@
 import os
-
 import player
+from recommend_test import *
 
 def check_bust(user):
     if user.get_score() > 21:
@@ -9,34 +9,28 @@ def check_bust(user):
         return 0
 
 def game():
-    print("[SYSTEM] Game starts")
     dealer = player.Dealer()
     user = player.Player()
 
     user_win = -1
 
-    print("Dealer cards")
     dealer.draw_card()
     dealer.draw_card()
-    dealer.show_first()
-    print("unknown")
+    #dealer.show_first()
     
-    print("Player cards")
     user.draw_card()
     user.draw_card()
-    user.print_cards()
-    print("Score : " + str(user.get_score()))
+    #user.print_cards()
     choice = "begin"
-    while choice != "q":
-        choice = input("Enter [H]it, [S]tand, or [Q]uit\n").lower()
-        if choice == "h":
+    while 1:
+        player_sum, dealer_sum, action, p_hit, p_stand = recommend(user.cards, dealer.cards)
+        if action == "HIT":
             user.hit()
-            if check_bust(user)==0:
-                print("Score : " + str(user.get_score()))
-        elif choice == "s":
+            #if check_bust(user)==0:
+            #    print("Score : " + str(user.get_score()))
+        elif action == "STAND":
             while dealer.get_score() < 17:
                 dealer.draw_card()
-            print("Dealer score: " + str(dealer.get_score())) 
             if check_bust(dealer):
                 user_win = 1
             elif dealer.get_score() > user.get_score():
@@ -46,28 +40,36 @@ def game():
             else:
                 user_win = 2 # Draw
             break
-        elif choice == "q":
-            print("Exit")
-            exit()
 
         if check_bust(user)==1:
-            print("[SYSTEM] Lose: User busted")
             user_win = 0
             break
-    print("USER")
-    user.print_cards()
-    print("Total: " + str(user.get_score()))
+    #user.print_cards()
 
-    print("DEALER")
-    dealer.print_cards()
-    print("Total: " + str(dealer.get_score()))
+    #dealer.print_cards()
+    
+    user.cards.clear()
+    dealer.cards.clear()
     if user_win == 0:
-        print("[SYSTEM] Lose")
+        return 0
     if user_win == 1:
-        print("[SYSTEM] Win")
+        return 1
     if user_win == 2:
-        print("[SYSTEM] Draw")
+        return 2
 if __name__ == "__main__" :
-    game()
+    w = 0
+    l = 0
+    d = 0
+    for i in range(100000):
+        result = game()
+        if(result == 0):
+            l += 1
+        elif(result == 1):
+            w += 1
+        elif(result == 2):
+            d += 1
+    print(w)
+    print(l)
+    print(d)
     
     

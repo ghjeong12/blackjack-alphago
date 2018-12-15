@@ -21,7 +21,7 @@
 from threading import Thread
 import cv2
 
-BRIGHTNESS = 50
+BRIGHTNESS = 60
 class VideoStream:
     """Camera object"""
     def __init__(self, resolution=(640,480),framerate=30,PiOrUSB=1,src=0):
